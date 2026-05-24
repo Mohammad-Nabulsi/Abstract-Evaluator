@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-05-24T22:47:31.625741+00:00",
+  "model": "gpt-5-mini",
+  "batch_size": 5,
+  "concurrency": 10,
+  "total_runtime_seconds": 320.2549706171267,
+  "rows_processed": 1000,
+  "generated": 841,
+  "failed": 0,
+  "original_kept": 159,
+  "rows_per_second": 3.122512034935834,
+  "average_seconds_per_row": 0.32025497061712666,
+  "input": "data/processed/test_plan_1000_run3.jsonl",
+  "output": "data/processed/test_generated_1000_run3.jsonl"
+}

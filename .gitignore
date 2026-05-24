@@ -219,8 +219,6 @@ __marimo__/
 experiments/
 data/
 # Large/generated data
-data/openreview/
-data/processed/
 *.jsonl
 *.csv
 *.parquet
