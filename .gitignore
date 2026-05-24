@@ -217,7 +217,7 @@ __marimo__/
 
 
 experiments/
-data/
+data/accepted/
 # Large/generated data
 *.jsonl
 *.csv
