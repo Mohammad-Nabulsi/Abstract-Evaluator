@@ -1,0 +1,68 @@
+# requirements.txt
+
+# ===== Core ML / DL =====
+torch
+torchvision
+torchaudio
+accelerate
+transformers
+datasets
+evaluate
+scikit-learn
+scipy
+numpy
+pandas
+openreview-py
+# ===== LLM Fine-tuning =====
+peft
+trl
+bitsandbytes
+sentencepiece
+protobuf
+einops
+safetensors
+tiktoken
+
+# ===== QLoRA / Fast Training =====
+unsloth
+
+# ===== Tokenization / Text =====
+# nltk
+# spacy
+# regex
+
+# ===== Experiment Tracking =====
+wandb
+# tensorboard
+
+# ===== Data / Utilities =====
+pyarrow
+openpyxl
+jupyter
+ipykernel
+notebook
+tqdm
+matplotlib
+plotly
+seaborn
+
+# ===== API / Serving =====
+fastapi
+uvicorn
+
+# ===== Optional Evaluation =====
+bert-score
+rouge-score
+sacrebleu
+
+# ===== Hugging Face =====
+huggingface_hub
+
+# ===== Optional Quantization / Inference =====
+# optimum
+# auto-gptq
+
+# ===== General Utilities =====
+python-dotenv
+requests
+pyyaml
