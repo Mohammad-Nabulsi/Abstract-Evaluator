@@ -1,0 +1,150 @@
+# If needed:
+# %pip install -q openai
+
+import os
+import json
+import re
+from typing import List, Dict, Any
+from openai import OpenAI
+
+# Set your key in environment before running:
+# Windows PowerShell: setx OPENAI_API_KEY "your_key_here"
+# or for current session: $env:OPENAI_API_KEY="your_key_here"
+
+client = OpenAI()
+
+
+def _extract_json_obj(text: str) -> Dict[str, Any]:
+    """Extract first JSON object from model text output."""
+    text = text.strip()
+    try:
+        obj = json.loads(text)
+        if isinstance(obj, dict):
+            return obj
+    except Exception:
+        pass
+
+    m = re.search(r'\{[\s\S]*\}', text)
+    if not m:
+        raise ValueError(f"Could not parse JSON from model output: {text[:300]}")
+    obj = json.loads(m.group(0))
+    if not isinstance(obj, dict):
+        raise ValueError("Parsed JSON is not an object")
+    return obj
+
+
+def score_one(item: Dict[str, str], model: str = "gpt-5-mini") -> Dict[str, Any]:
+    """
+    item keys:
+      PAPER_ID, title, submission, degradation_types, target_score, reviewer_style
+    returns project format:
+      {PAPER_ID, SCORE, RATIONAL}
+    """
+    paper_id = item["PAPER_ID"]
+    title = item["title"]
+    submission = item["submission"]
+    degradation_types = item.get("degradation_types", "")
+    target_score = int(item["target_score"])
+    reviewer_style = item.get("reviewer_style", "balanced and concise")
+
+    prompt = f"""You are a conference reviewer evaluating only the abstract, not the full paper.
+
+Task:
+Evaluate the quality of the following research abstract for conference acceptance.
+
+Reference:
+A strong research abstract clearly presents the problem, methodology, contribution, and experimental evidence.
+
+Rubric:
+0 = Strong reject
+1 = Reject
+2 = Borderline
+3 = Accept
+4 = Strong accept
+
+Title:
+{title}
+
+Submitted abstract:
+{submission}
+
+Known abstract-level flaw profile:
+{degradation_types}
+
+Target score:
+{target_score}
+
+Reviewer style:
+{reviewer_style}
+
+Write a realistic rationale.
+
+Rules:
+1. The rationale must match the target score.
+2. Discuss only the abstract quality.
+3. Mention the actual flaws visible in the submitted abstract.
+4. Do not mention the original abstract.
+5. Do not mention synthetic data or degradation.
+6. Keep it 2?5 sentences.
+7. Use the reviewer style, but stay professional.
+8. The rationale should also add the positive side of the abstract.
+9. Also tell what to fix about it.
+
+Return valid JSON only:
+{{
+  \"score\": {target_score},
+  \"rationale\": \"...\"
+}}"""
+
+    resp = client.responses.create(
+        model=model,
+        input=prompt,
+        temperature=0
+    )
+
+    text = getattr(resp, "output_text", "") or ""
+    parsed = _extract_json_obj(text)
+
+    score = int(parsed.get("score", target_score))
+    score = max(0, min(4, score))
+    rationale = str(parsed.get("rationale", "")).strip()
+
+    return {
+        "PAPER_ID": str(paper_id),
+        "SCORE": score,
+        "RATIONAL": rationale
+    }
+
+
+def score_batch(items: List[Dict[str, str]], model: str = "gpt-5-mini") -> List[Dict[str, Any]]:
+    results = []
+    for i, item in enumerate(items, 1):
+        out = score_one(item, model=model)
+        results.append(out)
+        print(f"Scored {i}/{len(items)} -> {out['PAPER_ID']} : {out['SCORE']}")
+    return results
+
+
+# Example input (replace with your real data)
+items = [
+    {
+        "PAPER_ID": "paper_001",
+        "title": "Example Paper Title",
+        "submission": "This paper proposes ...",
+        "degradation_types": "missing evidence, vague method details",
+        "target_score": 2,
+        "reviewer_style": "critical but constructive"
+    },
+    # Add more items here
+]
+
+results = score_batch(items, model="gpt-5-mini")
+print(json.dumps(results, ensure_ascii=False, indent=2))
+
+
+# Optional: save results to file
+out_path = "scores.json"
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(results, f, ensure_ascii=False, indent=2)
+print(f"Saved: {out_path}")
+

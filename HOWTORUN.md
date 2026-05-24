@@ -33,32 +33,12 @@ python -m pip install --upgrade pip
 ## 4. Install Requirements
 
 ```bash
+pip install -r requirements-torch-cu128.txt
 pip install -r requirements.txt
 ```
 
 ---
 
-## 5. Install CUDA-Compatible PyTorch
-
-Check your CUDA version:
-
-```bash
-nvidia-smi
-```
-
-Example for CUDA 12.1:
-
-```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-```
-
-Example for CUDA 11.8:
-
-```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
----
 
 ## 6. Register Jupyter Kernel
 

@@ -11,14 +11,9 @@ from openai import OpenAI
 
 PROMPT_TEMPLATE = """You are generating synthetic training data for a research abstract evaluation model.
 
-Original title:
-{title}
-
 Original abstract:
 {abstract}
 
-Keywords:
-{keywords_text}
 
 Target degradation plan:
 - Target score: {target_score}
@@ -50,9 +45,9 @@ Return exactly:
 
 TEMPERATURE_BY_SCORE = {
     3: 0.5,
-    2: 0.6,
-    1: 0.7,
-    0: 0.75,
+    2: 0.5,
+    1: 0.6,
+    0: 0.6,
 }
 
 
@@ -211,7 +206,6 @@ def call_model(
 
     response = client.chat.completions.create(
         model=model,
-        temperature=temperature,
         response_format={"type": "json_object"},
         messages=[
             {"role": "user", "content": prompt},
