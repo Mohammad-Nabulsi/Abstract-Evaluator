@@ -1,5 +1,5 @@
 """
-2025.11.2
+2026.5.4
 2025.11.1
 4.57.2
 0.23.0
@@ -26,8 +26,9 @@ from torch import Tensor
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+from unsloth_zoo.temporary_patches.common import torch_compile
 from typing import Any, List, Optional, Tuple, Union, Dict, Set, Callable
-from trl.trainer.sft_trainer import (Any, AutoConfig, AutoProcessor, Callable, DataCollator, DataCollatorForLanguageModeling, DataCollatorForVisionLanguageModeling, Dataset, EvalPrediction, IterableDataset, Optional, Path, PeftConfig, PreTrainedModel, PreTrainedTokenizerBase, ProcessorMixin, SFTConfig, SFTTrainer, Trainer, TrainerCallback, TrainingArguments, Union, clone_chat_template, contextlib, dataclass, defaultdict, dft_loss, generate_model_card, get_act_offloading_ctx_manager, get_comet_experiment_url, is_conversational, is_wandb_available, logger, logging, nn, os, pack_dataset, pad, prepare_peft_model, selective_log_softmax, torch, transformers, wandb, Callable, DataCollator, DataCollatorForLanguageModeling, Dataset, IterableDataset, Optional, Union, os, pack_dataset, pad, transformers, Optional, PreTrainedModel, Trainer, logger, os, torch, os)
+from trl.trainer.sft_trainer import (Any, AutoConfig, AutoProcessor, Callable, DataCollator, DataCollatorForLanguageModeling, DataCollatorForVisionLanguageModeling, Dataset, EvalPrediction, IterableDataset, Optional, Path, PeftConfig, PreTrainedModel, PreTrainedTokenizerBase, ProcessorMixin, SFTConfig, SFTTrainer, Trainer, TrainerCallback, TrainingArguments, Union, apply_chat_template, clone_chat_template, contextlib, dataclass, defaultdict, dft_loss, generate_model_card, get_act_offloading_ctx_manager, get_comet_experiment_url, is_conversational, is_wandb_available, logger, logging, nn, os, pack_dataset, pad, prepare_peft_model, selective_log_softmax, torch, transformers, wandb, Callable, DataCollator, DataCollatorForLanguageModeling, Dataset, IterableDataset, Optional, Union, apply_chat_template, is_conversational, os, pack_dataset, pad, transformers, Optional, PreTrainedModel, Trainer, logger, os, torch, os)
 
 
 import os
@@ -67,14 +68,20 @@ torch_compile_options = {
 }
 
 @torch.compile(dynamic = True, fullgraph = True, options = torch_compile_options,)
-def chunked_selective_log_softmax(logits, index):
-    # Split into 4 chunks only
-    chunked_logits = torch.chunk(logits.reshape(-1, logits.shape[-1]), chunks = 4, dim = 0)
-    chunked_index  = torch.chunk(index.reshape(-1), chunks = 4, dim = 0)
+def chunked_selective_log_softmax(
+    logits,
+    index,
+    temperature: float = 1.0,
+    chunks: int = 4,
+):
+    chunked_logits = torch.chunk(logits.reshape(-1, logits.shape[-1]), chunks = chunks, dim = 0)
+    chunked_index  = torch.chunk(index.reshape(-1), chunks = chunks, dim = 0)
     all_per_token_logps = []
     # Below loop does the same as selective_log_softmax(chunk_logits, chunk_index)
     for chunk_logits, chunk_index in zip(chunked_logits, chunked_index):
         chunk_logits = chunk_logits.to(torch.float32)
+        if temperature != 1.0:
+            chunk_logits = chunk_logits / temperature
         selected_logits = torch.gather(chunk_logits, dim = -1, index = chunk_index.unsqueeze(-1)).squeeze(-1)
         logsumexp_values = torch.logsumexp(chunk_logits, dim = -1)
         per_token_logps = selected_logits - logsumexp_values
@@ -90,7 +97,7 @@ def calculate_pad_tokens_in_prompt(
     pad_token_id: int
 ) -> torch.Tensor:
     """
-    Given prompt tensor, it returns all the left padded tokens in that sequence. so [pad, pad, pad, cat] = 3 tokens 
+    Given prompt tensor, it returns all the left padded tokens in that sequence. so [pad, pad, pad, cat] = 3 tokens
     """
     if logits_to_keep >= input_ids.shape[1]:
         raise ValueError("logits_to_keep must be smaller than the sequence length.")
@@ -942,6 +949,34 @@ class _UnslothSFTTrainer(Trainer):
         tokenizer = processing_class
         if is_vlm: tokenizer = processing_class.tokenizer
     
+        # Dynamic detection: check if model's module defines a function
+        # that requires token_type_ids when is_training=True
+        import sys as _sys
+        _needs_token_type_ids = False
+        # Split to avoid compiler substring match on masking_utils names
+        _ccm = 'create_' + 'causal_mask_mapping'
+        _model = getattr(self, '_unsloth_model_ref', None) or getattr(self, 'model', None)
+        if _model is not None:
+            for _m in (_model, getattr(_model, 'model', None)):
+                if _m is None: continue
+                _mod = _sys.modules.get(type(_m).__module__)
+                if _mod is not None and hasattr(_mod, _ccm):
+                    _needs_token_type_ids = True
+                    break
+    
+        if not _needs_token_type_ids:
+            # Fallback: model not yet available, check processor class MRO
+            for _base in type(processing_class).__mro__:
+                _base_mod = getattr(_base, '__module__', '')
+                if 'transformers.models.' in _base_mod:
+                    _modeling_mod = _base_mod.replace('.processing_', '.modeling_')
+                    _mod = _sys.modules.get(_modeling_mod)
+                    if _mod is not None and hasattr(_mod, _ccm):
+                        _needs_token_type_ids = True
+                        break
+        if _needs_token_type_ids and hasattr(args, 'remove_unused_columns'):
+            args.remove_unused_columns = False
+    
         # Get max length
         max_seq_length = getattr(args, "max_length", 0)
         if max_seq_length == 0: max_seq_length = getattr(args, "max_seq_length", 0)
@@ -952,12 +987,15 @@ class _UnslothSFTTrainer(Trainer):
         do_truncation = max_seq_length != 0
         do_formatting_func = False
         do_tokenize = True
+        do_prompt_completion = False
     
         # Get correct column names
         column_names = set(next(iter(dataset)).keys())
         used_column_names = ["input_ids"]
         if "attention_mask" in column_names:
             used_column_names.append("attention_mask")
+        if _needs_token_type_ids:
+            used_column_names.append("token_type_ids")
     
         # Check if already tokenized so skip
         from transformers import DataCollatorForSeq2Seq, DataCollatorForLanguageModeling
@@ -976,6 +1014,12 @@ class _UnslothSFTTrainer(Trainer):
                 raise RuntimeError(f"Unsloth: {processing_class.__class__} does not have .pad!")
             self.data_collator = DataCollatorForLanguageModeling(tokenizer, mlm = False)
             do_tokenize = False
+        elif "prompt" in column_names and "completion" in column_names:
+            # Prompt/completion dataset (used with completion_only_loss).
+            # TRL's __init__ already set self.data_collator for completion_only_loss
+            # before calling us -- we must NOT overwrite it here.
+            do_prompt_completion = True
+            used_column_names.append("completion_mask")
         elif dataset_text_field not in column_names:
             do_formatting_func = True
             if formatting_func is None:
@@ -991,6 +1035,23 @@ class _UnslothSFTTrainer(Trainer):
                         "Unsloth: The `formatting_func` should return a list of processed strings."
                     )
                 test_text = test_text[0]
+            elif do_prompt_completion:
+                _first_ex = next(iter(dataset))
+                try:
+                    from trl import is_conversational as _sft_is_conversational
+                except ImportError:
+                    def _sft_is_conversational(example):
+                        for key in ("prompt", "completion", "messages"):
+                            val = example.get(key)
+                            if isinstance(val, list) and val and isinstance(val[0], dict):
+                                if "role" in val[0] and "content" in val[0]:
+                                    return True
+                        return False
+                _is_conv = _sft_is_conversational(_first_ex)
+                if not _is_conv:
+                    test_text = _first_ex["prompt"]
+                else:
+                    test_text = None  # chat template handles BOS
             else:
                 test_text = next(iter(dataset))[dataset_text_field][0]
     
@@ -1008,7 +1069,7 @@ class _UnslothSFTTrainer(Trainer):
             bos_token = bos_token_1 or bos_token_2
     
             if bos_token is not None:
-                if test_text.startswith(bos_token) or bos_token in chat_template:
+                if (test_text is not None and test_text.startswith(bos_token)) or bos_token in chat_template:
                     add_special_tokens = False
                     print("Unsloth: We found double BOS tokens - we shall remove one automatically.")
             pass
@@ -1019,25 +1080,90 @@ class _UnslothSFTTrainer(Trainer):
                     example[dataset_text_field] if not do_formatting_func else formatting_func(example),
                     truncation = do_truncation,
                     max_length = max_seq_length,
-                    return_token_type_ids = False,
+                    return_token_type_ids = _needs_token_type_ids,
                     add_special_tokens = add_special_tokens,
                 )
             pass
     
             if not isinstance(dataset, IterableDataset):
+                import multiprocessing as _mp
                 dataset_num_proc = getattr(args, "dataset_num_proc", None)
                 if dataset_num_proc is None:
-                    from multiprocessing import cpu_count
-                    dataset_num_proc = max(cpu_count()+4, 2)
+                    if _mp.get_start_method() != 'fork':
+                        dataset_num_proc = None
+                    else:
+                        import psutil
+                        dataset_num_proc = min(max((psutil.cpu_count() or 1)+4, 2), 64)
+                        memory_gb_left = psutil.virtual_memory().available / (1024**3)
+                        if memory_gb_left <= 2:
+                            dataset_num_proc = 1
+                        else:
+                            dataset_num_proc = min(dataset_num_proc, int(memory_gb_left))
                 map_kwargs["num_proc"] = dataset_num_proc
             else:
                 map_kwargs["batch_size"] = dataset._ex_iterable.batch_size
-                
-            if use_desc: map_kwargs["desc"] = f'Unsloth: Tokenizing ["{dataset_text_field}"]'
-            dataset = dataset.map(_tokenize, batched = True, **map_kwargs)
+    
+            if do_prompt_completion:
+                # Tokenize prompt/completion datasets for completion_only_loss
+                _eos_token = getattr(tokenizer, 'eos_token', None)
+    
+                def _tokenize_pc(example):
+                    if _is_conv:
+                        prompt_ids = processing_class.apply_chat_template(
+                            example["prompt"], tokenize=True,
+                            add_generation_prompt=True, return_dict=False,
+                            tools=example.get("tools"),
+                            **(example.get("chat_template_kwargs") or {}),
+                        )
+                        if prompt_ids and isinstance(prompt_ids[0], list):
+                            prompt_ids = prompt_ids[0]
+                        pc_processed = processing_class.apply_chat_template(
+                            example["prompt"] + example["completion"],
+                            return_dict=True, tokenize=True,
+                            tools=example.get("tools"),
+                            **(example.get("chat_template_kwargs") or {}),
+                        )
+                        if isinstance(pc_processed.get("input_ids", [None])[0], list):
+                            pc_processed = {k: v[0] for k, v in pc_processed.items()}
+                        pc_ids = pc_processed["input_ids"]
+                    else:
+                        _completion = example["completion"]
+                        if _eos_token and not _completion.endswith(_eos_token):
+                            _completion = _completion + _eos_token
+                        prompt_ids = tokenizer(
+                            example["prompt"], add_special_tokens=add_special_tokens,
+                        )["input_ids"]
+                        pc_ids = tokenizer(
+                            example["prompt"] + _completion,
+                            add_special_tokens=add_special_tokens,
+                        )["input_ids"]
+                    if do_truncation and max_seq_length > 0:
+                        pc_ids = pc_ids[:max_seq_length]
+                    n_prompt = min(len(prompt_ids), len(pc_ids))
+                    completion_mask = [0] * n_prompt + [1] * (len(pc_ids) - n_prompt)
+                    result = {"input_ids": pc_ids, "completion_mask": completion_mask}
+                    if _needs_token_type_ids:
+                        result["token_type_ids"] = [0] * len(pc_ids)
+                    return result
+    
+                if use_desc:
+                    map_kwargs["desc"] = 'Unsloth: Tokenizing ["prompt"+"completion"]'
+                import warnings as _w
+                with _w.catch_warnings():
+                    _w.filterwarnings("ignore", message=".*couldn't be hashed properly.*")
+                    dataset = dataset.map(
+                        _tokenize_pc, batched=False,
+                        remove_columns=list(column_names), **map_kwargs,
+                    )
+            else:
+                if use_desc: map_kwargs["desc"] = f'Unsloth: Tokenizing ["{dataset_text_field}"]'
+                import warnings as _w
+                with _w.catch_warnings():
+                    _w.filterwarnings("ignore", message=".*couldn't be hashed properly.*")
+                    dataset = dataset.map(_tokenize, batched = True, remove_columns = list(column_names), **map_kwargs)
     
             # If VLM, switch data collator since .pad is needed!
-            if is_vlm and not hasattr(processing_class, "pad"):
+            if is_vlm and not hasattr(processing_class, "pad") and not do_prompt_completion:
                 data_collator = DataCollatorForLanguageModeling(tokenizer, mlm = False)
                 self.data_collator = data_collator
             pass
