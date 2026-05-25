@@ -1,0 +1,75 @@
+# requirements.txt
+
+# IMPORTANT:
+# Install PyTorch first with:
+# pip install -r requirements-torch-cu128.txt
+#
+# Do NOT install torch from this file, because this VM driver supports CUDA 12.8.
+# Installing latest torch may install cu130 and break CUDA.
+
+# ===== Core ML / DL =====
+accelerate
+transformers
+datasets
+evaluate
+scikit-learn
+scipy
+numpy
+pandas
+openreview-py
+
+# ===== LLM Fine-tuning =====
+peft
+trl
+bitsandbytes
+sentencepiece
+protobuf
+einops
+safetensors
+tiktoken
+
+# ===== QLoRA / Fast Training =====
+unsloth
+unsloth_zoo
+
+# ===== Tokenization / Text =====
+# nltk
+# spacy
+# regex
+
+# ===== Experiment Tracking =====
+wandb
+# tensorboard
+
+# ===== Data / Utilities =====
+pyarrow
+openpyxl
+jupyter
+ipykernel
+notebook
+tqdm
+matplotlib
+plotly
+seaborn
+
+# ===== API / Serving =====
+fastapi
+uvicorn
+openai
+
+# ===== Optional Evaluation =====
+bert-score
+rouge-score
+sacrebleu
+
+# ===== Hugging Face =====
+huggingface_hub
+
+# ===== Optional Quantization / Inference =====
+# optimum
+# auto-gptq
+
+# ===== General Utilities =====
+python-dotenv
+requests
+pyyaml

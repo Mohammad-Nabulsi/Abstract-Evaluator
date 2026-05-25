@@ -214,3 +214,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+experiments/
+data/accepted/
+# Large/generated data
+*.jsonl
+*.csv
+*.parquet
+*.pkl
+*.pt
+*.safetensors
+*.bin
