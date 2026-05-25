@@ -219,10 +219,11 @@ __marimo__/
 experiments/
 data/accepted/
 # Large/generated data
-*.jsonl
-*.csv
+
+
 *.parquet
 *.pkl
 *.pt
 *.safetensors
 *.bin
+.env
