@@ -1,6 +1,6 @@
 #!/home/HaniWB/my_gpu_project/Abstract-Evaluator/.venv_smoke/bin/python
 import sys
-from numpy._configtool import main
+from charset_normalizer.cli import cli_detect
 if __name__ == '__main__':
     sys.argv[0] = sys.argv[0].removesuffix('.exe')
-    sys.exit(main())
+    sys.exit(cli_detect())

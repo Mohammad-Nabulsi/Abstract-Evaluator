@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import gc
+import inspect
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
@@ -9,12 +11,76 @@ from typing import Any, Dict, Optional, Union
 import pandas as pd
 import torch
 import wandb
+from datasets import Dataset
 from transformers import EarlyStoppingCallback, TrainerCallback, TrainingArguments
 from trl import SFTTrainer
+from trl.trainer.base_trainer import BaseTrainer
 
 from experiments.utils.evaluation import compute_eval_metrics, parse_rationale, parse_score
 from experiments.utils.generation import generate_predictions_from_messages
 from .chat import build_formatting_func, make_inference_prompt
+
+
+class SafeSFTTrainer(SFTTrainer):
+    def compute_loss(
+        self,
+        model,
+        inputs,
+        return_outputs: bool = False,
+        num_items_in_batch=None,
+    ):
+        # Keep standard training loss behavior but skip TRL's extra logits-based
+        # metrics hooks that can break with some Unsloth logits wrappers.
+        mode = "train" if self.model.training else "eval"
+        inputs["use_cache"] = False
+        loss, outputs = BaseTrainer.compute_loss(
+            self,
+            model,
+            inputs,
+            return_outputs=True,
+            num_items_in_batch=num_items_in_batch,
+        )
+
+        if mode == "train":
+            if "attention_mask" in inputs:
+                num_tokens = self.accelerator.gather_for_metrics(inputs["attention_mask"].sum()).sum().item()
+                self._total_train_tokens += num_tokens
+            elif "position_ids" in inputs:
+                local_num_tokens = torch.tensor(
+                    inputs["position_ids"].size(1),
+                    device=inputs["position_ids"].device,
+                )
+                num_tokens = self.accelerator.gather_for_metrics(local_num_tokens).sum().item()
+                self._total_train_tokens += num_tokens
+            self._metrics[mode]["num_tokens"] = [self._total_train_tokens]
+
+        return (loss, outputs) if return_outputs else loss
+
+
+def _pretokenize_messages_dataset(dataset, tokenizer, max_seq_length: int) -> Dataset:
+    rows = []
+    eos = tokenizer.eos_token or ""
+    for ex in dataset:
+        text = tokenizer.apply_chat_template(
+            ex["messages"],
+            tokenize=False,
+            add_generation_prompt=False,
+        )
+        if eos and not text.endswith(eos):
+            text += eos
+        toks = tokenizer(
+            text,
+            add_special_tokens=False,
+            truncation=True,
+            max_length=max_seq_length,
+        )
+        rows.append(
+            {
+                "input_ids": toks["input_ids"],
+                "attention_mask": toks.get("attention_mask", [1] * len(toks["input_ids"])),
+            }
+        )
+    return Dataset.from_list(rows)
 
 
 class EpochCheckpointCallback(TrainerCallback):
@@ -154,6 +220,9 @@ def train_mistral7(
     output_dir = cfg.output_root / "models" / cfg.run_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Unsloth + TRL SFT can require raw logits during training metrics/loss hooks.
+    os.environ.setdefault("UNSLOTH_RETURN_LOGITS", "1")
+
     if cfg.wandb.enabled:
         if cfg.wandb.dir is not None:
             cfg.wandb.dir.mkdir(parents=True, exist_ok=True)
@@ -259,16 +328,41 @@ def train_mistral7(
             )
         )
 
-    trainer = SFTTrainer(
-        model=model,
-        tokenizer=tokenizer,
-        train_dataset=ds["train"],
-        eval_dataset=ds["validation"],
-        formatting_func=formatting_func,
-        max_seq_length=cfg.max_seq_length,
-        args=args,
-        callbacks=callbacks,
-    )
+    train_dataset_for_trainer = ds["train"]
+    eval_dataset_for_trainer = ds["validation"]
+    sft_kwargs = {
+        "model": model,
+        "args": args,
+        "callbacks": callbacks,
+    }
+    sft_sig = inspect.signature(SFTTrainer.__init__).parameters
+    if "processing_class" in sft_sig:
+        # Work around TRL/Unsloth pickle failures during dataset preprocessing by
+        # pre-tokenizing ourselves and skipping TRL's internal prepare step.
+        from trl import SFTConfig
+
+        train_dataset_for_trainer = _pretokenize_messages_dataset(ds["train"], tokenizer, cfg.max_seq_length)
+        eval_dataset_for_trainer = _pretokenize_messages_dataset(ds["validation"], tokenizer, cfg.max_seq_length)
+
+        if not isinstance(args, SFTConfig):
+            args = SFTConfig(**args.to_dict())
+        args.dataset_kwargs = {"skip_prepare_dataset": True}
+        args.max_length = None
+        args.dataset_num_proc = None
+        sft_kwargs["args"] = args
+        sft_kwargs["train_dataset"] = train_dataset_for_trainer
+        sft_kwargs["eval_dataset"] = eval_dataset_for_trainer
+        sft_kwargs["processing_class"] = tokenizer
+    else:
+        sft_kwargs["train_dataset"] = train_dataset_for_trainer
+        sft_kwargs["eval_dataset"] = eval_dataset_for_trainer
+        sft_kwargs["formatting_func"] = formatting_func
+        if "tokenizer" in sft_sig:
+            sft_kwargs["tokenizer"] = tokenizer
+        if "max_seq_length" in sft_sig:
+            sft_kwargs["max_seq_length"] = cfg.max_seq_length
+
+    trainer = SafeSFTTrainer(**sft_kwargs)
 
     start = time.time()
     resume_arg = str(resume_from_checkpoint) if resume_from_checkpoint else None
