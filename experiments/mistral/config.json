@@ -1,0 +1,522 @@
+{
+  "description": "Configuration mapping for each run name present in result.json",
+  "runs": {
+    "mistral7b_abstract_evaluator_lora_l4_modular": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_l4_modular",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 8e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "mistral7b_abstract_evaluator_lora_l4_modular_base_no_finetune": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_l4_modular",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 8e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "base_no_finetune"
+    },
+    "mistral7b_abstract_evaluator_lora_l4_modular_lr5e5": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft_lr5e5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_l4_modular_lr5e5",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 5e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "mistral7b_abstract_evaluator_lora_l4_modular_lr5e5_base_no_finetune": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft_lr5e5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_l4_modular_lr5e5",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 5e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "base_no_finetune"
+    },
+    "mistral7b_abstract_evaluator_lora_r32_l4_modular_lr5e5": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft_lr5e5_lorar32.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_r32_l4_modular_lr5e5",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft_lorar32",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 5e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 32,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "mistral7b_abstract_evaluator_lora_r32_l4_modular_lr5e5_base_no_finetune": {
+      "notebook": "experiments/mistral/mistral7_abstract_evaluator_unsloth_lora_sft_lr5e5_lorar32.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "run_name": "mistral7b_abstract_evaluator_lora_r32_l4_modular_lr5e5",
+        "max_seq_length": 2048,
+        "use_4bit": false,
+        "output_root": "experiments/artifacts/abstract_evaluator_mistral7b_sft_lorar32",
+        "data_paths": {
+          "train_path": "data/data/train/all.jsonl",
+          "val_path": "data/data/val/all.jsonl",
+          "test_path": "data/data/test/all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 30,
+          "per_device_train_batch_size": 2,
+          "per_device_eval_batch_size": 4,
+          "gradient_accumulation_steps": 4,
+          "learning_rate": 5e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "logging_steps": 5,
+          "save_total_limit": 20,
+          "early_stopping_patience": 3,
+          "early_stopping_threshold": 0.0,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_loss",
+          "greater_is_better": false,
+          "dataloader_num_workers": 4,
+          "dataloader_pin_memory": true,
+          "gradient_checkpointing": true,
+          "group_by_length": true,
+          "auto_find_batch_size": true,
+          "tf32": true
+        },
+        "generation": {
+          "max_new_tokens": 120,
+          "batch_size": 4,
+          "do_sample": false,
+          "temperature": 0.0,
+          "top_p": 1.0
+        },
+        "wandb": {
+          "enabled": true,
+          "project": "abstract-evaluator-mistral7b-sft",
+          "entity": null,
+          "tags": [
+            "mistral7b",
+            "lora",
+            "sft",
+            "modular",
+            "l4-24gb",
+            "no-quant"
+          ],
+          "run_group": null,
+          "dir": "experiments/artifacts/wandb"
+        },
+        "lora_cfg": {
+          "r": 32,
+          "lora_alpha": 32,
+          "lora_dropout": 0.0,
+          "bias": "none",
+          "freeze_ratio": 0.0,
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "base_no_finetune"
+    }
+  },
+  "missing_runs": []
+}
