@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/home/MohammadNabulsi/Essay Evaluator/.venv_smoke/bin/python3" "$0" "$@"
-' '''
+#!/home/HaniWB/my_gpu_project/Abstract-Evaluator/.venv_smoke/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
