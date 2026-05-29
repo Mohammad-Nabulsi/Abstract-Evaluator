@@ -1,0 +1,20 @@
+[
+  {
+    "tag":"base",
+    "score_accuracy":0.2583892617,
+    "score_accuracy_within_1":0.7617449664,
+    "bertscore_f1_mean":0.6495627649
+  },
+  {
+    "tag":"stage1",
+    "score_accuracy":0.2783505155,
+    "score_accuracy_within_1":0.6838487973,
+    "bertscore_f1_mean":0.8448014911
+  },
+  {
+    "tag":"stage2",
+    "score_accuracy":0.4519774011,
+    "score_accuracy_within_1":0.8531073446,
+    "bertscore_f1_mean":0.8251020571
+  }
+]

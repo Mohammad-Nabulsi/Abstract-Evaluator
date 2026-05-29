@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 import torch
 
@@ -17,12 +17,17 @@ def infer_num_layers(model) -> int:
     raise ValueError("Could not infer transformer layer count.")
 
 
-def freeze_lower_lora_layers(model, freeze_ratio: float = 0.0):
-    if freeze_ratio <= 0:
-        return {"num_layers": infer_num_layers(model), "cutoff": 0}
+def _compute_layer_cutoff(num_layers: int, freeze_ratio: float) -> tuple[int, List[int], float]:
+    clamped_ratio = max(0.0, min(1.0, float(freeze_ratio)))
+    cutoff = int(num_layers * clamped_ratio)
+    layers_to_train = list(range(cutoff, num_layers))
+    return cutoff, layers_to_train, clamped_ratio
 
+
+def freeze_lower_lora_layers(model, freeze_ratio: float = 0.0):
     num_layers = infer_num_layers(model)
-    cutoff = int(num_layers * freeze_ratio)
+    cutoff, layers_to_train, clamped_ratio = _compute_layer_cutoff(num_layers, freeze_ratio)
+    trainable_layer_set = set(layers_to_train)
 
     layer_pat = re.compile(r"\.layers\.(\d+)\.")
     trainable = 0
@@ -37,19 +42,28 @@ def freeze_lower_lora_layers(model, freeze_ratio: float = 0.0):
         match = layer_pat.search(name)
         if match:
             layer_idx = int(match.group(1))
-            if layer_idx < cutoff:
+            if layer_idx in trainable_layer_set:
+                param.requires_grad = True
+                trainable += param.numel()
+            else:
+                param.requires_grad = False
+                frozen += param.numel()
+        else:
+            # In partial-layer mode, keep non-transformer LoRA adapters frozen
+            # so base-layer outputs remain unchanged.
+            if clamped_ratio > 0.0:
                 param.requires_grad = False
                 frozen += param.numel()
             else:
                 param.requires_grad = True
                 trainable += param.numel()
-        else:
-            param.requires_grad = True
-            trainable += param.numel()
 
     return {
         "num_layers": num_layers,
+        "requested_freeze_ratio": float(freeze_ratio),
+        "effective_freeze_ratio": clamped_ratio,
         "cutoff": cutoff,
+        "trainable_layers": layers_to_train,
         "trainable_params": trainable,
         "frozen_params": frozen,
     }
@@ -83,6 +97,17 @@ def apply_lora_to_model(
     lora_cfg: Dict[str, Any],
     seed: int,
 ):
+    freeze_ratio = float(lora_cfg.get("freeze_ratio", 0.0))
+    num_layers = infer_num_layers(model)
+    _, layers_to_train, clamped_ratio = _compute_layer_cutoff(num_layers, freeze_ratio)
+    layers_to_transform = layers_to_train if clamped_ratio > 0.0 else None
+
+    if layers_to_transform is not None and not layers_to_transform:
+        raise ValueError(
+            f"freeze_ratio={freeze_ratio} freezes all layers. "
+            "Use a value < 1.0 so at least one top layer receives LoRA."
+        )
+
     model = FastLanguageModel.get_peft_model(
         model,
         r=lora_cfg["r"],
@@ -90,12 +115,14 @@ def apply_lora_to_model(
         lora_alpha=lora_cfg["lora_alpha"],
         lora_dropout=lora_cfg["lora_dropout"],
         bias=lora_cfg["bias"],
+        layers_to_transform=layers_to_transform,
         use_gradient_checkpointing="unsloth",
         random_state=seed,
         use_rslora=False,
         loftq_config=None,
     )
-    freeze_info = freeze_lower_lora_layers(model, float(lora_cfg.get("freeze_ratio", 0.0)))
+    freeze_info = freeze_lower_lora_layers(model, freeze_ratio)
+    freeze_info["lora_layers_to_transform"] = layers_to_transform
     trainable_info = print_trainable_parameters(model)
     freeze_info.update(trainable_info)
     return model, freeze_info
@@ -144,4 +171,3 @@ def load_qwen3_model_for_inference(
         tokenizer.pad_token = tokenizer.eos_token
     model.generation_config.pad_token_id = tokenizer.pad_token_id
     return model, tokenizer
-
