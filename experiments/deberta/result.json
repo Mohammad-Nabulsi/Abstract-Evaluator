@@ -1,0 +1,79 @@
+{
+  "notes": {
+    "base_selection": "Included one untuned DeBERTa-v3-base baseline from the explicit base-vs-finetuned comparison artifact.",
+    "base_source_run": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+    "task_scope": "score-only classification (no text generation metrics)."
+  },
+  "untuned_base": {
+    "deberta_v3_base": {
+      "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first_base_no_finetune",
+      "model_name": "microsoft/deberta-v3-base",
+      "checkpoint_tag": "base_no_finetune",
+      "validation/score_accuracy": 0.22483221476510068,
+      "validation/score_mae": 1.151006711409396,
+      "validation/score_within_1_accuracy": 0.7248322147651006,
+      "validation/score_rmse": 1.450526402943974,
+      "validation/score_macro_f1": 0.07342465753424657,
+      "test/score_accuracy": 0.22818791946308725,
+      "test/score_mae": 1.1442953020134228,
+      "test/score_within_1_accuracy": 0.7281879194630873,
+      "test/score_rmse": 1.4458921214411666,
+      "test/score_macro_f1": 0.07431693989071039,
+      "source_run": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+      "source_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score\\comparisons\\deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first\\base_vs_finetuned_metrics.json"
+    }
+  },
+  "tuned_models": [
+    {
+      "run_name": "deberta_v3_base_abstract_evaluator_lora_score_only_3e-5",
+      "model_name": "microsoft/deberta-v3-base",
+      "checkpoint_tag": "best_ckpt_checkpoint-382",
+      "validation/score_accuracy": 0.348993288590604,
+      "validation/score_mae": 0.9026845637583892,
+      "validation/score_within_1_accuracy": 0.7483221476510067,
+      "validation/score_rmse": 1.1857656886823702,
+      "validation/score_macro_f1": null,
+      "test/score_accuracy": 0.348993288590604,
+      "test/score_mae": 0.9026845637583892,
+      "test/score_within_1_accuracy": 0.7483221476510067,
+      "test/score_rmse": 1.1857656886823702,
+      "test/score_macro_f1": null,
+      "source_run": "deberta_v3_base_abstract_evaluator_lora_score_only_3e-5",
+      "source_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score\\eval\\deberta_v3_base_abstract_evaluator_lora_score_only_3e-5"
+    },
+    {
+      "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v1",
+      "model_name": "microsoft/deberta-v3-base",
+      "checkpoint_tag": "best_ckpt_checkpoint-764",
+      "validation/score_accuracy": 0.348993288590604,
+      "validation/score_mae": 0.9026845637583892,
+      "validation/score_within_1_accuracy": 0.7483221476510067,
+      "validation/score_rmse": 1.1857656886823702,
+      "validation/score_macro_f1": 0.10348258706467661,
+      "test/score_accuracy": 0.348993288590604,
+      "test/score_mae": 0.9026845637583892,
+      "test/score_within_1_accuracy": 0.7483221476510067,
+      "test/score_rmse": 1.1857656886823702,
+      "test/score_macro_f1": 0.10348258706467661,
+      "source_run": "deberta_v3_base_lora_score_only_3e5_weighted_v1",
+      "source_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score\\eval\\deberta_v3_base_lora_score_only_3e5_weighted_v1"
+    },
+    {
+      "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+      "model_name": "microsoft/deberta-v3-base",
+      "checkpoint_tag": "best_ckpt_checkpoint-1910",
+      "validation/score_accuracy": 0.40939597315436244,
+      "validation/score_mae": 0.802013422818792,
+      "validation/score_within_1_accuracy": 0.8120805369127517,
+      "validation/score_rmse": 1.127746461105914,
+      "validation/score_macro_f1": 0.4072426407041707,
+      "test/score_accuracy": 0.3959731543624161,
+      "test/score_mae": 0.8422818791946308,
+      "test/score_within_1_accuracy": 0.7818791946308725,
+      "test/score_rmse": 1.1657874603393896,
+      "test/score_macro_f1": 0.3884068468192674,
+      "source_run": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+      "source_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score\\eval\\deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first"
+    }
+  ]
+}

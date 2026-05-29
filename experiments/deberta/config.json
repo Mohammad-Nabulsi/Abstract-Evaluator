@@ -1,0 +1,258 @@
+{
+  "description": "Configuration mapping for each DeBERTa run name present in result.json",
+  "runs": {
+    "deberta_v3_base_abstract_evaluator_lora_score_only_3e-5": {
+      "notebook": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\deberta\\deberta_abstract_evaluator_lora_score_only_3e-5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "microsoft/deberta-v3-base",
+        "run_name": "deberta_v3_base_abstract_evaluator_lora_score_only_3e-5",
+        "max_length": 512,
+        "num_labels": 5,
+        "output_root": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score",
+        "data_paths": {
+          "train_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\train\\all.jsonl",
+          "val_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\val\\all.jsonl",
+          "test_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\test\\all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 6,
+          "per_device_train_batch_size": 8,
+          "per_device_eval_batch_size": 16,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 3e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "max_grad_norm": 1.0,
+          "logging_steps": 10,
+          "save_total_limit": 3,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_mae",
+          "greater_is_better": false,
+          "early_stopping_patience": 2,
+          "early_stopping_threshold": 0.0,
+          "dataloader_num_workers": 2,
+          "fp16": true,
+          "bf16": false,
+          "use_class_weights": true
+        },
+        "lora": {
+          "enabled": true,
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.1,
+          "bias": "none",
+          "target_modules": [
+            "query_proj",
+            "value_proj"
+          ],
+          "freeze_lower_n_when_no_lora": 8
+        },
+        "wandb_enabled": false,
+        "wandb_project": "abstract-evaluator-deberta-score",
+        "wandb_entity": null,
+        "wandb_dir": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\wandb",
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "deberta_v3_base_lora_score_only_3e5_weighted_v1": {
+      "notebook": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\deberta\\deberta_abstract_evaluator_lora_score_only_3e-5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "microsoft/deberta-v3-base",
+        "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v1",
+        "max_length": 512,
+        "num_labels": 5,
+        "output_root": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score",
+        "data_paths": {
+          "train_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\train\\all.jsonl",
+          "val_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\val\\all.jsonl",
+          "test_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\test\\all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 6,
+          "per_device_train_batch_size": 8,
+          "per_device_eval_batch_size": 16,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 3e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "max_grad_norm": 1.0,
+          "logging_steps": 10,
+          "save_total_limit": 3,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_macro_f1",
+          "greater_is_better": true,
+          "early_stopping_patience": 2,
+          "early_stopping_threshold": 0.0,
+          "dataloader_num_workers": 2,
+          "fp16": true,
+          "bf16": false,
+          "use_class_weights": true
+        },
+        "lora": {
+          "enabled": true,
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.1,
+          "bias": "none",
+          "target_modules": [
+            "query_proj",
+            "value_proj"
+          ],
+          "freeze_lower_n_when_no_lora": 8
+        },
+        "wandb_enabled": false,
+        "wandb_project": "abstract-evaluator-deberta-score",
+        "wandb_entity": null,
+        "wandb_dir": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\wandb",
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first": {
+      "notebook": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\deberta\\deberta_abstract_evaluator_lora_score_only_3e-5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "microsoft/deberta-v3-base",
+        "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+        "max_length": 512,
+        "num_labels": 5,
+        "output_root": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score",
+        "data_paths": {
+          "train_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\train\\all.jsonl",
+          "val_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\val\\all.jsonl",
+          "test_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\test\\all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 6,
+          "per_device_train_batch_size": 8,
+          "per_device_eval_batch_size": 16,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 3e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "max_grad_norm": 1.0,
+          "logging_steps": 10,
+          "save_total_limit": 3,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_macro_f1",
+          "greater_is_better": true,
+          "early_stopping_patience": 2,
+          "early_stopping_threshold": 0.0,
+          "dataloader_num_workers": 2,
+          "fp16": true,
+          "bf16": false,
+          "use_class_weights": true
+        },
+        "lora": {
+          "enabled": true,
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.1,
+          "bias": "none",
+          "target_modules": [
+            "query_proj",
+            "value_proj"
+          ],
+          "freeze_lower_n_when_no_lora": 8
+        },
+        "wandb_enabled": false,
+        "wandb_project": "abstract-evaluator-deberta-score",
+        "wandb_entity": null,
+        "wandb_dir": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\wandb",
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "tuned"
+    },
+    "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first_base_no_finetune": {
+      "notebook": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\deberta\\deberta_abstract_evaluator_lora_score_only_3e-5.ipynb",
+      "config": {
+        "seed": 3407,
+        "model_name": "microsoft/deberta-v3-base",
+        "run_name": "deberta_v3_base_lora_score_only_3e5_weighted_v2_submission_first",
+        "max_length": 512,
+        "num_labels": 5,
+        "output_root": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\abstract_evaluator_deberta_score",
+        "data_paths": {
+          "train_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\train\\all.jsonl",
+          "val_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\val\\all.jsonl",
+          "test_path": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\data\\data\\test\\all.jsonl",
+          "combined_path": null
+        },
+        "train": {
+          "num_train_epochs": 6,
+          "per_device_train_batch_size": 8,
+          "per_device_eval_batch_size": 16,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 3e-05,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.01,
+          "lr_scheduler_type": "cosine",
+          "max_grad_norm": 1.0,
+          "logging_steps": 10,
+          "save_total_limit": 3,
+          "eval_strategy": "epoch",
+          "eval_steps": null,
+          "save_strategy": "epoch",
+          "save_steps": null,
+          "load_best_model_at_end": true,
+          "metric_for_best_model": "eval_macro_f1",
+          "greater_is_better": true,
+          "early_stopping_patience": 2,
+          "early_stopping_threshold": 0.0,
+          "dataloader_num_workers": 2,
+          "fp16": true,
+          "bf16": false,
+          "use_class_weights": true
+        },
+        "lora": {
+          "enabled": true,
+          "r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.1,
+          "bias": "none",
+          "target_modules": [
+            "query_proj",
+            "value_proj"
+          ],
+          "freeze_lower_n_when_no_lora": 8
+        },
+        "wandb_enabled": false,
+        "wandb_project": "abstract-evaluator-deberta-score",
+        "wandb_entity": null,
+        "wandb_dir": "C:\\Users\\hanib\\mext_next\\Abstract-Evaluator\\experiments\\artifacts\\wandb",
+        "train_rows": null,
+        "val_rows": null,
+        "test_rows": null
+      },
+      "variant": "base_no_finetune"
+    }
+  },
+  "missing_runs": []
+}
