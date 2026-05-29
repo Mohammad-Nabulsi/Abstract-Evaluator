@@ -1,0 +1,8 @@
+{
+  "score_accuracy": 0.27835051546391754,
+  "score_accuracy_within_1": 0.6838487972508591,
+  "score_mae": 1.147766323024055,
+  "json_parse_rate": 0.91,
+  "non_empty_generation_rate": 0.9733333333333334,
+  "bertscore_f1_mean": 0.8448014911015829
+}

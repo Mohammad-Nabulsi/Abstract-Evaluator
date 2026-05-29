@@ -227,3 +227,6 @@ data/accepted/
 *.safetensors
 *.bin
 .env
+
+
+scripts/new_data/
